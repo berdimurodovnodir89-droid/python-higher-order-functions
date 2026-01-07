@@ -703,7 +703,24 @@ def get_average_age(data: dict) -> float:
     Returns:
         float: Average age.
     """
-    pass
+    total_age = 0
+    count = 0
+
+    for user in data['results']:
+        total_age += user['dob']['age']
+        count += 1
+
+    if count > 0 :
+        avg_age = total_age/count
+
+        return avg_age
+    else :
+        return 0.0
+
+
+    
+
+print(get_emails_of_older_than(randomuser_data,1))
 
 
 def group_users_by_nationality(data: dict) -> dict:
