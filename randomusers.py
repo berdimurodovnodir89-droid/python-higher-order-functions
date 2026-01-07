@@ -571,7 +571,8 @@ randomuser_data = {
 
 
 def get_full_names(data: dict) -> list[str]:
-    """
+
+   """
     Returns a list of users' full names in 'First Last' format.
 
     Args:
@@ -580,10 +581,19 @@ def get_full_names(data: dict) -> list[str]:
     Returns:
         list[str]: List of full names.
     """
-    pass
+   full_names = []
+   for user in data['results']:
+        full_name = user['name']['first'] + '' + user['name']['last']
+        full_names.append(full_name)
+
+   return full_names
+
+print(get_full_names(data=randomuser_data))
+
 
 
 def get_users_by_country(data: dict, country: str) -> list[dict]:
+
     """
     Filters and returns users who live in a specific country.
 
@@ -594,8 +604,14 @@ def get_users_by_country(data: dict, country: str) -> list[dict]:
     Returns:
         list[dict]: List of dictionaries containing full name and email of matching users.
     """
-    pass
+    result = []
+    for user in data['results']:
+        if user['location']['country'] == country:
+            result.append(user) 
+    
+    return result
 
+print(get_users_by_country(randomuser_data, 'Netherlands'))
 
 def count_users_by_gender(data: dict) -> dict:
     """
@@ -607,7 +623,17 @@ def count_users_by_gender(data: dict) -> dict:
     Returns:
         dict: Dictionary with gender as keys and count as values.
     """
-    pass
+    gender_count = {}
+    for user in data['results']:
+        gender = user['gender']
+        if gender in gender_count:
+            gender_count[gender]  += 1 
+        else :
+            gender_count[gender] = 1
+
+    return gender_count
+
+print(count_users_by_gender(randomuser_data))
 
 
 def get_emails_of_older_than(data: dict, age: int) -> list[str]:
@@ -621,7 +647,14 @@ def get_emails_of_older_than(data: dict, age: int) -> list[str]:
     Returns:
         list[str]: List of email addresses.
     """
-    pass
+    older_person = []
+    for person in data['results']:
+        if person['dob']['age'] > age:
+            older_person.append(person['email'])
+
+    return older_person
+
+print(get_emails_of_older_than(randomuser_data,60))
 
 
 def sort_users_by_age(data: dict, descending: bool = False) -> list[dict]:
@@ -649,7 +682,15 @@ def get_usernames_starting_with(data: dict, letter: str) -> list[str]:
     Returns:
         list[str]: List of matching usernames.
     """
-    pass
+    usernames = []
+    for user in data['results']:
+        username = user['login']['username']
+        if username.lower().startswith(letter.lower()):
+            usernames.append(username)
+    return usernames
+
+print(get_usernames_starting_with(randomuser_data,'g'))
+
 
 
 def get_average_age(data: dict) -> float:
