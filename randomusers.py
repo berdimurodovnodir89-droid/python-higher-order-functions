@@ -1,3 +1,5 @@
+from pprint import pprint
+
 randomuser_data = {
     "results": [
         {
@@ -588,7 +590,7 @@ def get_full_names(data: dict) -> list[str]:
 
    return full_names
 
-print(get_full_names(data=randomuser_data))
+pprint(get_full_names(data=randomuser_data))
 
 
 
@@ -611,7 +613,7 @@ def get_users_by_country(data: dict, country: str) -> list[dict]:
     
     return result
 
-print(get_users_by_country(randomuser_data, 'Netherlands'))
+pprint(get_users_by_country(randomuser_data, 'Netherlands'))
 
 def count_users_by_gender(data: dict) -> dict:
     """
@@ -623,17 +625,17 @@ def count_users_by_gender(data: dict) -> dict:
     Returns:
         dict: Dictionary with gender as keys and count as values.
     """
-    gender_count = {}
+    result = {'male': 0, 'female': 0}
     for user in data['results']:
-        gender = user['gender']
-        if gender in gender_count:
-            gender_count[gender]  += 1 
-        else :
-            gender_count[gender] = 1
+        if user['gender'] == 'male':
+            result["male"] += 1
+        elif user['gender'] == 'female':
+            result["female"] += 1 
+    return result
 
-    return gender_count
+pprint(count_users_by_gender(randomuser_data))
 
-print(count_users_by_gender(randomuser_data))
+
 
 
 def get_emails_of_older_than(data: dict, age: int) -> list[str]:
@@ -647,14 +649,19 @@ def get_emails_of_older_than(data: dict, age: int) -> list[str]:
     Returns:
         list[str]: List of email addresses.
     """
-    older_person = []
-    for person in data['results']:
-        if person['dob']['age'] > age:
-            older_person.append(person['email'])
+    emails = map(
+        lambda user :
+        user['email'],
+        filter(
+            lambda user:
+                user['dob']['age'] >= age,
+                randomuser_data['results']
+            )
+        )
+    return list(emails)
 
-    return older_person
+pprint(get_emails_of_older_than(randomuser_data,70))
 
-print(get_emails_of_older_than(randomuser_data,60))
 
 
 def sort_users_by_age(data: dict, descending: bool = False) -> list[dict]:
@@ -668,8 +675,12 @@ def sort_users_by_age(data: dict, descending: bool = False) -> list[dict]:
     Returns:
         list[dict]: List of users with name and age sorted accordingly.
     """
-    pass
-
+    return sorted(
+        data['results'],
+        key = lambda user:
+        user['dob']['age'],reverse=descending
+    )
+pprint(sort_users_by_age(randomuser_data,descending=False     ))
 
 def get_usernames_starting_with(data: dict, letter: str) -> list[str]:
     """
@@ -682,16 +693,18 @@ def get_usernames_starting_with(data: dict, letter: str) -> list[str]:
     Returns:
         list[str]: List of matching usernames.
     """
-    usernames = []
-    for user in data['results']:
-        username = user['login']['username']
-        if username.lower().startswith(letter.lower()):
-            usernames.append(username)
-    return usernames
-
-print(get_usernames_starting_with(randomuser_data,'g'))
-
-
+    return list(map(
+        lambda user :
+        user['email'],
+        filter(
+            lambda user :
+            user['login']['username'].startswith(letter),
+            data['results']
+        )
+    )
+    )
+pprint(get_usernames_starting_with(randomuser_data,'a'))
+    
 
 def get_average_age(data: dict) -> float:
     """
@@ -705,22 +718,22 @@ def get_average_age(data: dict) -> float:
     """
     total_age = 0
     count = 0
-
-    for user in data['results']:
-        total_age += user['dob']['age']
-        count += 1
-
-    if count > 0 :
-        avg_age = total_age/count
-
-        return avg_age
-    else :
-        return 0.0
-
-
     
+    for user in data['results']:
+        age = user['dob']['age']
+        if age != None:  
+            total_age += age
+            count += 1
+    
+    if count > 0:
+        return total_age / count  
+    else:
+        return 0.0
+ 
 
-print(get_emails_of_older_than(randomuser_data,1))
+
+pprint(get_average_age(randomuser_data))
+
 
 
 def group_users_by_nationality(data: dict) -> dict:
@@ -733,8 +746,19 @@ def group_users_by_nationality(data: dict) -> dict:
     Returns:
         dict: Dictionary with nationality as keys and count as values.
     """
-    pass
+    result = {}
+    
 
+    for user in data['results']:
+        nat = user['nat']
+        if nat in result :
+            result[nat] += 1
+        else :
+            result[nat] = 1
+    return result
+    
+pprint(group_users_by_nationality(randomuser_data))
+         
 
 def get_all_coordinates(data: dict) -> list[tuple[str, str]]:
     """
@@ -746,9 +770,16 @@ def get_all_coordinates(data: dict) -> list[tuple[str, str]]:
     Returns:
         list[tuple[str, str]]: List of coordinate tuples.
     """
-    pass
+    coordinates = []
+    for user in data['results']:
+        latitude =  user['location']['coordinates']['latitude'] 
+        longitude =  user['location']['coordinates']['longitude']
+        coordinates.append((latitude,longitude))
+    return coordinates
 
+pprint(get_all_coordinates(randomuser_data))
 
+    
 def get_oldest_user(data: dict) -> dict:
     """
     Finds and returns the oldest user's name, age, and email.
@@ -759,7 +790,17 @@ def get_oldest_user(data: dict) -> dict:
     Returns:
         dict: Dictionary containing 'name', 'age', and 'email' of the oldest user.
     """
-    pass
+    
+    return max(
+        data['results'],
+        key = lambda user:
+        user['dob']['age'] 
+    )
+
+pprint(get_oldest_user(randomuser_data))
+
+    
+
 
 
 def find_users_in_timezone(data: dict, offset: str) -> list[dict]:
@@ -773,7 +814,14 @@ def find_users_in_timezone(data: dict, offset: str) -> list[dict]:
     Returns:
         list[dict]: List of users with full name and city.
     """
-    pass
+    result = []
+    for user in data['results']:
+        if user['location']['timezone']['offset'] == offset:
+            result.append({"name": f"{user['name']['first']} {user['name']['last']}",
+                "city": user['location']['city']})
+    return result
+
+pprint(find_users_in_timezone(randomuser_data,'+5:30'))
 
 
 def get_registered_before_year(data: dict, year: int) -> list[dict]:
@@ -787,14 +835,12 @@ def get_registered_before_year(data: dict, year: int) -> list[dict]:
     Returns:
         list[dict]: List of users with full name and registration date.
     """
-    pass
+    result = []
+    for user in data['results']:
+        if user['registered']['data'] == year:
+            result.append(user['location']['timezone']['offset'])
 
 
-def run_functions() -> None:
-    """
-    Runs and prints results of all data processing functions for demonstration purposes.
-    """
-    print("Full Names:", get_full_names(randomuser_data))
 
 
-run_functions()
+
